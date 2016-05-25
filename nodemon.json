@@ -1,0 +1,7 @@
+{
+  "verbose": false,
+  "watch": [
+    "example"
+  ],
+  "exec": "npm run build"
+}
