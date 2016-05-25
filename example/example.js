@@ -1,6 +1,7 @@
 import bestFit from '../dist/dist.js';
 
 const numberDots = 50;
+const numberGroups = 4;
 const width = 800;
 const height = 500;
 const lineResolution = 10; // make configureable
@@ -34,8 +35,8 @@ export default class Main {
 
   renderBestFitLine(lineData) {
     var line = d3.svg.line()
-          .x(function(d) { return d.x; })
-          .y(function(d) { return d.y; });
+          .x((d) => { return d.x; })
+          .y((d) => { return d.y; });
 
     this.svg.append("path")
       .datum(lineData)
@@ -68,31 +69,25 @@ export default class Main {
         x: widthIncrement * index,
         y: 0
       });
-    };
 
-    // left
-    for (let index = 0; index < resolution; ++index) {
+      // LEFT
       dots.push({
         x: 0,
         y: heightIncrement * (index + 1)
       });
-    };
 
-    // right
-    for (let index = 0; index < resolution; ++index) {
+      // RIGHT
       dots.push({
         x: width,
         y: heightIncrement * index
       });
-    };
 
-    // bottom
-    for (let index = 0; index < resolution; ++index) {
+      // BOTTOM
       dots.push({
         x: widthIncrement * (index + 1),
         y: height
       });
-    };
+    }
 
     return dots;
   }
@@ -119,61 +114,52 @@ export default class Main {
   }
 
   // based on https://dracoblue.net/dev/linear-least-squares-in-javascript/
-  findLineByLeastSquares(values_x, values_y) {
-    let sum_x = 0;
-    let sum_y = 0;
-    let sum_xy = 0;
-    let sum_xx = 0;
+  findLineByLeastSquares(valuesX, valuesY) {
+    let sumX = 0;
+    let sumY = 0;
+    let sumXy = 0;
+    let sumXx = 0;
     let count = 0;
 
     let x = 0;
     let y = 0;
-    let values_length = values_x.length;
+    let valuesLength = valuesX.length;
 
-    if (values_length != values_y.length) {
-      throw new Error('The parameters values_x and values_y need to have same size!');
+    if (valuesLength != valuesY.length) {
+      throw new Error('The parameters valuesX and valuesY need to have same size!');
     }
 
     // return if no values
-    if (values_length === 0) {
+    if (valuesLength === 0) {
       return [ [], [] ];
     }
 
     //  Calculate the sum for each of the parts necessary.
-    for (let v = 0; v < values_length; v++) {
-      x = values_x[v];
-      y = values_y[v];
-      sum_x += x;
-      sum_y += y;
-      sum_xx += x*x;
-      sum_xy += x*y;
+    for (let v = 0; v < valuesLength; v++) {
+      x = valuesX[v];
+      y = valuesY[v];
+      sumX += x;
+      sumY += y;
+      sumXx += x*x;
+      sumXy += x*y;
       count++;
     }
 
     /*
      * Calculate m and b for the formula:
-     * y = x * m + b
+     * y = m * x + b
      */
-    let m = (count*sum_xy - sum_x*sum_y) / (count*sum_xx - sum_x*sum_x);
-    let b = (sum_y/count) - (m*sum_x)/count;
+    let m = (count*sumXy - sumX*sumY) / (count*sumXx - sumX*sumX);
+    let b = (sumY/count) - (m*sumX)/count;
 
-    // We will make the x and y result line now
-    let result_values_x = [];
-    let result_values_y = [];
-
-    for (let v = 0; v < values_length; v++) {
-      x = values_x[v];
-      y = x * m + b;
-      result_values_x.push(x);
-      result_values_y.push(y);
-    }
-
-    // format results
+    // make the x and y result line
     let results = [];
-    for (let i = 0; i < values_length; i++) {
+    for (let v = 0; v < valuesLength; v++) {
+      x = valuesX[v];
+      y = x * m + b;
       results.push({
-        x: result_values_x[i],
-        y: result_values_y[i]
+        x: x,
+        y: y
       });
     }
     return results;
